@@ -1,0 +1,118 @@
+<apex:page controller="OrderCtrl" docType="html-5.0">
+    <apex:slds />
+    <div class="slds-grid slds-page-header slds-p-horizontal_xx-small">
+        <div class="slds-col slds-size_6-of-12 slds-p-horizontal_xx-small">
+            <h1 class="slds-page-header__title slds-text-align_center">Contact Information</h1>
+        </div>
+        <div class="slds-col slds-size_6-of-12 slds-p-horizontal_xx-small">
+            <h1 class="slds-page-header__title slds-text-align_center">Product Information</h1>
+        </div>
+    </div> 
+    <apex:pageMessages />
+    <apex:form id="form">
+        <div class="slds-grid  slds-p-vertical_medium" disabled="true">
+            <div class = "slds-col slds-size_1-of-12">
+            </div>
+            <div class = "slds-col slds-size_4-of-12">
+                <div class = "slds-grid slds-grid_vertical">
+                    <div class = "slds-grid slds-m-bottom_small">
+                        <div class="slds-size_6-of-12"> 
+                            <label class="slds-form-element__label slds-float_right">Email</label>
+                        </div>
+                        <div class="slds-size_6-of-12">
+                            <apex:inputField id="email" styleClass="slds-float_left slds-input" value="{!customerContact.Email}" />       
+                        </div>
+                    </div>
+                    <div class = "slds-grid slds-m-bottom_small">
+                        <div class="slds-size_6-of-12">
+                            <label class="slds-form-element__label slds-float_right">First Name</label>    
+                        </div>
+                        <div class="slds-size_6-of-12">
+                            <apex:inputField id="firstname" styleClass="slds-float_left slds-input" value="{!customerContact.FirstName}" />       
+                        </div>
+                    </div>
+                    <div class = "slds-grid">
+                        <div class="slds-size_6-of-12">
+                            <label class="slds-form-element__label slds-float_right">Last Name<span class="slds-required">*</span>
+                            </label>    
+                        </div>
+                        <div class="slds-size_6-of-12">
+                            <apex:inputField id="lastname" styleClass="slds-float_left slds-input" value="{!customerContact.LastName}" />       
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class = "slds-col slds-grid slds-grid_vertical slds-size_2-of-12">
+            </div>
+            <div class = "slds-col slds-grid slds-grid_vertical slds-size_4-of-12">
+                <div class = "slds-grid slds-m-bottom_small">
+                    <div class="slds-size_6-of-12"> 
+                        <label class="slds-form-element__label slds-float_right">Product Name</label>
+                    </div>
+                    <div class="slds-size_6-of-12">
+                        <label class="slds-form-element__label slds-float_left">{!product.Name}</label>
+                    </div>
+                </div>
+                <div class = "slds-grid slds-m-bottom_small">
+                    <div class="slds-size_6-of-12">
+                        <label class="slds-form-element__label slds-float_right">Cost</label>    
+                    </div>
+                    <div class="slds-size_6-of-12">
+                        <label id = "unitPrice" class="slds-form-element__label slds-float_left">{!CEILING(product.Unit_Price__c)} $</label>
+                    </div>
+                </div>
+                <div class = "slds-grid slds-m-bottom_small">
+                    <div class="slds-size_6-of-12">
+                        <label class="slds-form-element__label slds-float_right">Unit Count</label>    
+                    </div>
+                    <div class="slds-size_6-of-12">
+                        <apex:inputField id="unitCount" styleClass="slds-float_left slds-input" value="{!order.Units__c}"  onkeyup="updateTotal(value);" onkeypress="return digitsOnly(event);" />       
+                    </div>
+                </div>
+                
+                <div class = "slds-grid">
+                    <div class="slds-size_6-of-12">
+                        <label class="slds-form-element__label slds-float_right">Total Amount</label>    
+                    </div>
+                    <div class="slds-size_6-of-12">
+                        <apex:inputHidden id="orderTotalInput" value="{!order.Order_Amount__c}" />
+                        <label id = "orderTotalLabel" class="slds-form-element__label slds-float_left"></label>
+                    </div>
+                </div>
+            </div>
+            <div class = "slds-col slds-grid slds-grid_vertical slds-size_1-of-12">
+            </div>
+        </div>
+        
+        <div class="slds-page-header slds-p-vertical_small slds-grid">        
+            <div class="slds-col slds-size_6-of-12 slds-p-horizontal_xx-small">
+                <a class="slds-button slds-button_neutral slds-float_right" onclick="history.go({!previousPageInd});">Cancel</a>
+            </div>
+            <div class="slds-col slds-size_6-of-12 slds-p-horizontal_xx-small">
+                <apex:commandButton id="buyButton" value="Buy" styleClass="slds-button slds-button_brand slds-float_left" action="{!checkout}" />
+            </div>
+        </div>
+</apex:form>
+
+    
+
+    
+    <script type="text/javascript">
+    document.getElementById('{!$Component.form.buyButton}').disabled = true;
+    function digitsOnly(e){
+        var digits = '1234567890'; 
+        var key = e.key;
+        if (key=="Backspace" || key=="Delete" ||(key.indexOf("Arrow")!=-1)|| key=="Home" || key=="End") return true;                
+        return (digits.indexOf(key)!=-1); 
+    } 
+    function updateTotal(v){
+        var unitCount = v;
+        if (unitCount == '') unitCount = '0';
+        document.getElementById('{!$Component.form.buyButton}').disabled = (parseInt(unitCount) == 0);
+        var res = parseInt(unitCount) * parseInt({!product.Unit_Price__c});
+        document.getElementById('orderTotalLabel').innerHTML = res + ' $'; 
+        document.getElementById('{!$Component.form.orderTotalInput}').value = res;
+    }
+    </script>    
+
+</apex:page>

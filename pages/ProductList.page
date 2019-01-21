@@ -1,0 +1,47 @@
+<apex:page controller="ProductListCtrl">
+    <apex:slds />
+    <div class="slds-p-horizontal_medium">
+        <div class="slds-page-header slds-p-horizontal_xx-small slds-theme_default" >
+            <h1 class="slds-page-header__title">Product List</h1>
+        </div>
+        <table  class="slds-table slds-table_bordered">
+            <thead>
+                <tr class="slds-text-heading_small slds-line-height_reset">
+                    <th><div class="slds-text-color_weak">IMAGE</div></th>
+                    <th></th>
+                    <th><div class="slds-text-color_weak">TITLE</div></th>
+                    <th><div class="slds-text-color_weak">DESCRIPTION</div></th>
+                    <th><div class="slds-text-color_weak">COST</div></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <apex:repeat value="{!prodList}" var="prod">
+                    <tr >
+                        <th class="slds-size_2-of-12">
+                            <div><apex:image url="{!prod.Image_Url__c}"/></div>
+                        </th>
+                        <th class="slds-size_2-of-12">
+                            <div class="slds-cell-wrap"><a href="/apex/ProductDetail?Id={!prod.Id}" target="_blank">{!prod.Name}</a></div>
+                        </th>
+                        <td class="slds-size_3-of-12 slds-align-middle">
+                            <div class="slds-cell-wrap">{!prod.Title__c}</div>
+                        </td>
+                        <td class="slds-size_5-of-12 slds-align-middle">
+                            <div class="slds-cell-wrap">
+                                <apex:outputText value="{!IF(LEN(prod.Product_Description__c) > 100, LEFT(prod.Product_Description__c, 97) + '...', prod.Product_Description__c)}" />
+                                <a href="/apex/ProductDetail?Id={!prod.Id}" target="_blank">More</a>
+                            </div>
+                        </td>
+                        <td class="slds-size_1-of-12 slds-align-middle">
+                            <div>{!CEILING(prod.Unit_Price__c)}$</div>
+                        </td>
+                        <td class="slds-col slds-align-middle">
+                            <a class="slds-button slds-button_brand" href="/apex/Order?Product={!prod.Id}">Buy</a>
+                        </td>
+                    </tr>
+                </apex:repeat>
+            </tbody>
+        </table>
+    </div>
+</apex:page>

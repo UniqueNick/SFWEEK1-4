@@ -1,0 +1,27 @@
+<apex:page controller="ProductDetailCtrl">
+    <apex:slds />
+    <div class="slds-page-header slds-p-horizontal_xx-small">
+        <h1 class="slds-page-header__title slds-text-align_center">{!product.Name}</h1>
+    </div> 
+    <div class="slds-grid slds-p-vertical_small slds-border_bottom slds-grid_vertical-align-center" >
+        <div class="slds-col slds-size_6-of-12 slds-p-horizontal_small">
+            <div class="slds-align_absolute-center"><apex:image width="75%" url="{!product.Image_Url__c}"/></div>
+        </div>
+        <div id="reper" class="slds-col slds-grid slds-grid_vertical slds-size_6-of-12">
+            <span class="slds-text-color_weak">AMOUNT:</span> 
+            <span class="slds-p-bottom_small">{!product.Units_Available__c}</span>
+            <span class="slds-text-color_weak">TITLE:</span>
+            <span class="slds-p-bottom_small">{!product.Title__c}</span>
+            <span class="slds-text-color_weak">DESCRIPTION:</span>
+            <span>{!product.Product_Description__c}</span>
+        </div>
+    </div>
+    <div class="slds-page-header slds-p-vertical_small slds-grid">
+        <div class="slds-col slds-size_6-of-12 slds-p-horizontal_xx-small">
+            <a class="slds-button slds-button_neutral slds-float_right" href="/apex/ProductList">To Shopping</a>
+        </div>
+        <div class="slds-col slds-size_6-of-12 slds-p-horizontal_xx-small">
+            <a class="slds-button slds-button_brand slds-float_left" href="/apex/Order?Product={!product.Id}">Buy</a> 
+        </div>
+    </div>
+</apex:page>
