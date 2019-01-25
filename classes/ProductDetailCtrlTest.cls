@@ -6,9 +6,7 @@ public class ProductDetailCtrlTest {
                                                         Units_Available__c = 42,
                                                         Title__c = 'The Best',
                                                         Product_Description__c = 'Awesome');
-        system.debug('1 ' + product);
         insert product; 
-        system.debug('2 ' + product);
         System.currentPageReference().getParameters().put('Id', product.Id);
         ProductDetailCtrl ctrl = new ProductDetailCtrl();
         System.assertNotEquals(null, ctrl.product);
