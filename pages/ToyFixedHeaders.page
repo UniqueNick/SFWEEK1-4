@@ -1,0 +1,99 @@
+<apex:page controller="ProductManagementCtrl" >
+    <apex:slds />
+    <apex:form >    
+        
+        <apex:selectList size="1" value="{!pageSize}" multiselect="false">
+            <apex:selectOptions value="{!pageSizes}"/>
+            <apex:actionSupport event="onchange" action="{!updatePageSize}" rerender="records"/> 
+        </apex:selectList><p/>
+        
+        <apex:inputText value="{!searchCriteria}" onkeyup="onChange(this.value)"/>
+        
+        <apex:actionFunction name="onChange" action="{!updateSet}" rerender="records">
+            <apex:param name="srchStr" assignTo="{!searchCriteria}" value=""/> 
+        </apex:actionFunction>
+        <apex:actionFunction name="flipNameOrder" action="{!flipNameOrder}" rerender="records"/>
+
+    </apex:form> 
+    
+    
+    <apex:outputPanel id="records">
+        
+        <div class="slds-table_header-fixed_container" style="height:450px;">
+            <div class="slds-scrollable_y" style="height:100%;">
+               
+                
+                <table  class="slds-table  slds-table_header-fixed slds-table_bordered slds-table_col-bordered">
+                    <thead> 
+                        <tr class="slds-text-heading_small slds-line-height_reset slds-text-title_caps">
+                            <th scope = "col" onclick = "flipNameOrder()">
+                                <div class="slds-text-color_weak slds-cell-fixed" style="width: 192px;">
+                                    <a class="slds-th__action slds-text-link_reset">Product Name</a>
+                                </div>
+                            </th>
+                            <th scope = "col" style = "text-align: center">
+                                <div class="slds-th__action slds-text-color_weak slds-cell-fixed">Price</div>
+                            </th>
+                            <th scope = "col" style = "text-align: center">
+                                <div class="slds-th__action slds-text-color_weak slds-cell-fixed">Quantity</div>
+                            </th>
+                            <th scope = "col" style = "text-align: center">
+                                <div class="slds-th__action slds-text-color_weak slds-cell-fixed">Product Type</div>
+                            </th>
+                            <th scope = "col" style = "text-align: center">
+                                <div class="slds-th__action slds-text-color_weak slds-cell-fixed">Arrival Date</div>
+                            </th>
+                            <th scope = "col" style = "text-align: center">
+                                <div class="slds-th__action slds-text-color_weak slds-cell-fixed">Production Date</div>
+                            </th>
+                            <th scope = "col" style = "text-align: center">
+                                <div class="slds-th__action slds-text-color_weak slds-cell-fixed">In Stock</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:repeat value="{!pageSet}" var="prod">
+                            <tr >
+                                <th class="slds-align-left">
+                                    <div>{!prod.Name}</div>
+                                </th>
+                                <td class="slds-align-left">
+                                    <div>{!prod.Unit_Price__c}</div>
+                                </td>
+                                <td style = "text-align: center">
+                                    <div>{!prod.Units_Available__c}</div>
+                                </td>
+                                <td style = "text-align: center">
+                                    <div>{!prod.Product_Type__c}</div>
+                                </td>
+                                <td style = "text-align: center">
+                                    <div>
+                                        <apex:outputText value="{0, date, dd'/'MM'/'yyyy}">
+                                            <apex:param value="{!prod.Arrival_Date__c}" />
+                                        </apex:outputText>
+                                    </div>
+                                </td>
+                                <td style = "text-align: center">
+                                    <div>
+                                        <apex:outputText value="{0, date, dd'/'MM'/'yyyy}">
+                                            <apex:param value="{!prod.Production_Date__c}" />
+                                        </apex:outputText>
+                                    </div>
+                                </td>
+                                <td style= "text-align: center" >
+                                    <div>{!IF(prod.In_Stock__c == true,'Yes','No')}</div>
+                                </td> 
+                                <td style= "text-align: center" >
+                                    <div>{!IF(prod.In_Stock__c == true,'Yes','No')}</div>
+                                </td> 
+                            </tr>
+                        </apex:repeat>
+                    </tbody>
+                </table>
+            </div></div>
+        
+    </apex:outputPanel>    
+    <script>
+    
+    </script>
+</apex:page>

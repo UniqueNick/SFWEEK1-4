@@ -1,0 +1,556 @@
+<apex:page controller="ProductManagementCtrl" docType="html-5.0">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" lang="en">
+        <apex:slds />
+        <style>
+            .centering-content_v{
+            display: flex;
+            }
+            .centered-content_v{
+            margin-top:auto;
+            margin-bottom:auto;
+            }
+            .centered-content{
+            margin-top:auto;
+            margin-bottom:auto;
+            margin-left:auto;
+            margin-right:auto;
+            }
+        </style> 
+        <apex:form id="topForm">        
+            <apex:outputPanel id="toastWrapper">
+                <div id="toast" style="position: relative; height: 4rem; z-index: {!toastIndex};">
+                    <div class="toastContainer slds-notify_container slds-is-relative">
+                        <div id="toastOpacity" class="slds-notify slds-notify_toast slds-theme_{!toastType}" role="status" style="opacity: 0;">
+                            <span class="slds-assistive-text">success</span>
+                            <span class="slds-icon_container slds-icon-utility-success slds-m-right_small slds-no-flex slds-align-top" title="Description of icon when needed">
+                                <svg class="slds-icon slds-icon_small" aria-hidden="true">
+                                    <use xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#success')}"></use>
+                                </svg>
+                            </span>
+                            <div class="slds-notify__content">
+                                <h2 class="slds-text-heading_small ">Product <a href="javascript:void(0);">{!newRecord.Name}</a><span> </span>{!writeResult}</h2>
+                            </div>
+                            <div class="slds-notify__close">
+                                <button class="slds-button slds-button_icon slds-button_icon-inverse" type="button" onclick="hideToastInstantly();" title="Close">
+                                    <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                        <use xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                    </svg>
+                                    <span class="slds-assistive-text">Close</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                (function () {
+                    var fadeTimerID = setTimeout(stepFadeToast, 3000);      
+                    if (document.getElementById('toast').style.zIndex == 3)   
+                        document.getElementById('toastOpacity').style.opacity = 1;        
+                })();
+                function hideToastInstantly(){
+                    document.getElementById('toastOpacity').style.opacity = 0;        
+                }
+                function stepFadeToast(){
+                    var rest = document.getElementById('toastOpacity').style.opacity;        
+                    rest = rest - 0.01;
+                    document.getElementById('toastOpacity').style.opacity = rest;        
+                    if (rest > 0) 
+                        fadeTimerID = setTimeout(stepFadeToast, 20);     
+                    else
+                        document.getElementById('toast').style.zIndex = 1;   
+                }
+                </script>        
+            </apex:outputPanel>
+            
+            <div style="position: relative; top: -4rem; z-index: 2;">
+                <div class="slds-grid slds-page-header slds-page-header_joined slds-shrink-none" style="padding: 0.5rem;">
+                    <div class="slds-grid slds-size_2-of-12 centering-content_v"> 
+                        <label class="slds-page-header__name slds-text-heading_large slds-float_left centered-content"><b>Products</b></label>
+                    </div>
+                    <apex:actionRegion >
+                        <div class="slds-grid slds-grid_vertical slds-size_3-of-12 slds-box" style="padding: 0.3rem;">
+                            <div class="slds-col centering-content_v">
+                                <label class="slds-text-heading_small slds-float_left slds-p-top_x-small slds-p-bottom_x-small centered-content">Search products by name:</label>
+                            </div>
+                            <div class="slds-col">
+                                <apex:inputText styleClass="slds-input" value="{!searchCriteria}"  html-placeholder="Enter partial product name here ..." onkeyup="onChange(this.value)"/>
+                            </div>
+                            <apex:actionFunction name="onChange" action="{!updateSet}" rerender="records">
+                                <apex:param name="srchStr" assignTo="{!searchCriteria}" value=""/> 
+                            </apex:actionFunction>
+                        </div>
+                    </apex:actionRegion>
+                    <apex:actionRegion >
+                        <div class="slds-grid  slds-size_6-of-12 slds-box" style="padding: 0.3rem;">
+                            <div id="badSearchIntervalContainer" class="slds-grid slds-grid_vertical slds-size_10-of-12">
+                                <div class="slds-col centering-content_v">
+                                    <label class="slds-text-heading_small centered-content">Select products by arrival date interval</label>
+                                </div>
+                                <div class="slds-grid">
+                                    <div class="slds-grid slds-size_6-of-12">
+                                        <div class="slds-col centering-content_v">
+                                            <label class="slds-text-heading_small slds-float_right centered-content">From:</label>
+                                        </div>
+                                        <div class="slds-col slds-float_right">
+                                            <apex:inputField id="fromDate" styleClass="slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" onchange="checkDateInterval();" value="{!startDate.Arrival_Date__c}"/>                
+                                        </div>
+                                    </div>                    
+                                    <div class="slds-grid slds-size_6-of-12">
+                                        <div  class="slds-col centering-content_v">
+                                            <label class="slds-text-heading_small centered-content slds-float_right">To:</label>
+                                        </div>
+                                        <div class="slds-col slds-float_right">
+                                            <apex:inputField id="toDate" styleClass="slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" onchange="checkDateInterval();" value="{!endDate.Arrival_Date__c}"/>    
+                                        </div>
+                                    </div>                    
+                                </div>
+                                <div id="badSearchIntervalError" class="slds-col centering-content_v" style="display: none;">
+                                    <label class="slds-form-element__help centered-content slds-form-element__help">Interval start date must be less or equal than end date</label>
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-grid_vertical slds-size_2-of-12 slds-p-horizontal_xx-small">
+                                <div class="slds-col">
+                                    <apex:commandButton id="resetInterval" value="Reset" title="Remove product list date restrictions" styleClass="slds-button slds-button_neutral slds-text-color_default slds-button_stretch" action="{!resetDateFilter}" rerender="records,dateSearchBox"/>                        
+                                </div>
+                                <div class="slds-col">
+                                    <apex:commandButton id="fetchInterval" value="Apply" title="Apply date boundaries to product list" styleClass="slds-button slds-button_neutral slds-text-color_default slds-button_stretch" action="{!applyDateFilter}" rerender="records"/>            
+                                </div>
+                            </div>
+                        </div>
+                    </apex:actionRegion>
+                    <div class="slds-grid slds-grid_vertical slds-size_1-of-12" style="padding: 0.3rem;">
+                        <div>
+                            <apex:actionRegion >
+                                <apex:commandButton value="New" title="Create new product record" styleClass="slds-button slds-button_neutral slds-text-color_default slds-float_right" action="{!editNewRecord}"/>
+                            </apex:actionRegion>
+                        </div> 
+                    </div>
+                </div>
+
+                <apex:outputPanel id="new_edit_show_record"  rendered="{!showInputPanel}">
+                    <div>
+                        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                            
+                            <div class="slds-modal__container">
+                                <header class="slds-modal__header">
+                                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" type="button" onclick="document.getElementById('{!$Component.new_edit_show_record}').style.display = 'none'" title="Close">
+                                        <svg class="slds-button__icon slds-button__icon_large" aria-hidden="true">
+                                            <use xlink:href="{!URLFOR($Asset.SLDS, 'assets/icons/utility-sprite/svg/symbols.svg#close')}"></use>
+                                        </svg>
+                                        <span class="slds-assistive-text">Close</span>
+                                    </button>
+                                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">{!IF(inputPanelMode == 'new','New Product',IF(inputPanelMode == 'edit','Edit Product',IF(inputPanelMode == 'delete','Delete Product','Product Data')))}</h2>
+                                </header>
+                                <div class="slds-modal__content slds-p-horizontal_medium" id="modal-content-id-1">
+                                    <apex:inputHidden id="hiddenId" value="{!newRecord.Id}" rendered="{!IF(inputPanelMode == 'edit',true,IF(inputPanelMode == 'delete',true,false))}"/>
+                                    <div id="deleteBody" class = "slds-grid slds-grid_vertical slds-p-around_medium" style="{!IF(inputPanelMode == 'delete','','display:none')}">
+                                        <label class="slds-text-heading_small slds-float_left">
+                                            <div class="slds-grid slds-grid_vertical">
+                                                <div class="centering-content_v">
+                                                    <span class="centered-content">{!newRecord.Name}</span><br/>                                                
+                                                </div>
+                                                <div class="slds-p-vertical_xx-small"> </div>
+                                                <div class="centering-content_v">
+                                                    <span class="centered-content">Are you sure you want to delete this product ?</span>                                                
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div id="newEditShowBody" class = "slds-grid slds-grid_vertical slds-p-around_medium" style="{!IF(inputPanelMode != 'delete','','display:none')}">
+                                        <div id="newEditRecordNameContainer" class = "slds-grid slds-p-bottom_x-small slds-border_bottom slds-form-element" >
+                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">Product Name</label>
+                                            </div>
+                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordName" styleClass="slds-float_left slds-input" value="{!newRecord.Name}" />
+                                                <label id="newEditRecordNameError" class="slds-float_left slds-form-element__help" style="display: none;">Please enter product name above</label>
+                                            </div>
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!newRecord.Name}</label>
+                                            </div>
+                                        </div>
+                                        <div id="newEditRecordPriceContainer" class = "slds-grid slds-p-vertical_x-small slds-border_bottom" >
+                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">Price</label>
+                                            </div>
+                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordPrice" styleClass="slds-float_left slds-input" value="{!newRecord.Unit_Price__c}" onkeypress="return digitsOnly(event);"/>       
+                                                <label id="newEditRecordPriceError" class="slds-float_left slds-form-element__help" style="display: none;">Please enter product price above</label>
+                                            </div>
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!newRecord.Unit_Price__c}$</label>
+                                            </div>
+                                        </div>
+                                        <div id="newEditRecordQuantityContainer" class = "slds-grid slds-p-vertical_x-small slds-border_bottom" >
+                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">Stock Quantity</label>
+                                            </div>
+                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordQuantity" styleClass="slds-float_left slds-input" value="{!newRecord.Units_Available__c}" onkeypress="return digitsOnly(event);"/>       
+                                                <label id="newEditRecordQuantityError" class="slds-float_left slds-form-element__help" style="display: none;">Please enter number of product available above</label>
+                                            </div>
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!newRecord.Units_Available__c}</label>
+                                            </div>
+                                        </div>
+                                        <div id="newEditRecordProductTypeContainer" class = "slds-grid slds-p-vertical_x-small slds-border_bottom" >
+                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">Product Type</label>
+                                            </div>
+                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordProductType" styleClass="slds-float_left slds-input" value="{!newRecord.Product_Type__c}" />       
+                                                <label id="newEditRecordProductTypeError" class="slds-float_left slds-form-element__help" style="display: none;">Please enter type of product above</label>
+                                            </div>
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!newRecord.Product_Type__c}</label>
+                                            </div>
+                                        </div>
+                                        <div id="newEditRecordProductionDateContainer" class = "slds-grid slds-p-vertical_x-small slds-border_bottom" >
+                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">Production Date</label>
+                                            </div>
+                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordProductionDate" styleClass="slds-float_left slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" value="{!newRecord.Production_Date__c}" />       
+                                                <label id="newEditRecordProductionDateEmpty" class="slds-float_left slds-form-element__help" style="display: none;">Please enter date of production above</label>
+                                                <label id="newEditRecordProductionDateTooBig" class="slds-float_left slds-form-element__help" style="display: none;">Production should be happened before arrival</label>
+                                            </div>
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
+                                                <apex:outputText styleClass="slds-text-heading_small slds-float_left centered-content_v" value="{0, date, d MMMM yyyy}">
+                                                    <apex:param value="{!newRecord.Production_Date__c}" />
+                                                </apex:outputText>
+                                            </div>
+                                        </div>
+                                        <div id="newEditRecordArrivalDateContainer" class = "slds-grid {!IF(inputPanelMode == 'show','slds-p-vertical_x-small slds-border_bottom','slds-p-top_x-small')}">
+                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">Arrival Date</label>
+                                            </div>
+                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordArrivalDate" styleClass="slds-float_left slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" value="{!newRecord.Arrival_Date__c}" />       
+                                                <label id="newEditRecordArrivalDateEmpty" class="slds-float_left slds-form-element__help" style="display: none;">Please enter date of product arrival above</label>
+                                                <label id="newEditRecordArrivalDateTooLow" class="slds-float_left slds-form-element__help" style="display: none;">Arrival should be happened after production</label>
+                                            </div>
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
+                                                <apex:outputText styleClass="slds-text-heading_small slds-float_left centered-content_v" value="{0, date, d MMMM yyyy}">
+                                                    <apex:param value="{!newRecord.Arrival_Date__c}" />
+                                                </apex:outputText>
+                                            </div>
+                                        </div>
+                                        <div class = "slds-grid slds-p-top_x-small" style="{!IF(inputPanelMode == 'show','','display:none')}">
+                                            <div class="slds-size_6-of-12 centering-content_v">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">In Stock</label>
+                                            </div>
+                                            <div class="slds-size_6-of-12 centering-content_v" >
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!IF(newRecord.In_Stock__c == true,'Yes','No')}</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <footer class="slds-modal__footer">
+                                    <div id = "footerDel" style="{!IF(inputPanelMode == 'delete','','display:none')}">
+                                        <input class="slds-button slds-button_neutral" value="Cancel" type="button" onclick="document.getElementById('{!$Component.new_edit_show_record}').style.display = 'none'"/>
+                                        <input class="slds-button slds-button_brand" value="Delete" type="button" onclick="deleteRecord()"/>
+                                        <apex:actionFunction name="deleteRecord" action="{!deleteRecord}"/>
+                                    </div>
+                                    <div id = "footerEditNew" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
+                                        <input class="slds-button slds-button_neutral" value="Cancel" type="button" onclick="document.getElementById('{!$Component.new_edit_show_record}').style.display = 'none'"/>
+                                        <input class="slds-button slds-button_brand" value="Save" type="button" onclick="validateNewEditRecord()"/>
+                                        <apex:actionFunction name="saveRecord" action="{!saveRecord}"/>
+                                    </div>
+                                    <div id = "footerShow" style="text-align: center; {!IF(inputPanelMode == 'show','','display:none')}">
+                                        <input class="slds-button slds-button_brand" value="OK" type="button" onclick="document.getElementById('{!$Component.new_edit_show_record}').style.display = 'none'"/>
+                                    </div>
+                                </footer>
+                            </div>
+                        </section>
+                        <div class="slds-backdrop slds-backdrop_open"></div>
+                    </div>
+                </apex:outputPanel>
+                
+                <apex:outputPanel id="records">
+                    <table  class="slds-table slds-table_bordered">
+                        <thead> 
+                            <tr class="slds-text-title_caps">
+                                <th onclick = "flipNameOrder()" title="Click to change product name sort direction, sort order or to exclude product name from sorting">
+                                    <div >
+                                        <a class="slds-th__action slds-text-link_reset slds-p-horizontal_none">Product Name{!IF(nameOrder!='',IF(nameOrder=='ASC','▲','▼'),'')}{!nameStage}</a>
+                                    </div>  
+                                </th>
+                                <apex:actionFunction name="flipNameOrder" action="{!flipNameOrder}" rerender="records"/>
+                                <th onclick = "flipPriceOrder()" title="Click to change product price sort direction, sort order or to exclude product price from sorting">
+                                    <div class="slds-text-color_weak centering-content_v">
+                                        <a class="centered-content slds-th__action slds-text-link_reset slds-p-horizontal_none">Unit Price{!IF(priceOrder!='',IF(priceOrder=='ASC','▲','▼'),'')}{!priceStage}</a>
+                                    </div>  
+                                </th>
+                                <apex:actionFunction name="flipPriceOrder" action="{!flipPriceOrder}" rerender="records"/>
+                                <th>
+                                    <div class="slds-text-color_weak centering-content_v">
+                                        <span class="centered-content">Quantity</span>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="slds-text-color_weak centering-content_v">
+                                        <span class="centered-content">Product Type</span>
+                                    </div>
+                                </th>
+                                <th onclick = "flipArrivalDateOrder()" title="Click to change date of product arrival sort direction, sort order or to exclude product arrival from sorting">
+                                    <div class="slds-text-color_weak centering-content_v">
+                                        <a class="slds-th__action slds-text-link_reset slds-p-horizontal_none centered-content">Arrival{!IF(arrivalDateOrder!='',IF(arrivalDateOrder=='ASC','▲','▼'),'')}{!arrivalStage}</a>
+                                    </div>  
+                                </th>
+                                <apex:actionFunction name="flipArrivalDateOrder" action="{!flipArrivalDateOrder}" rerender="records"/>
+                                <th>
+                                    <div class="slds-text-color_weak centering-content_v">
+                                        <span class="centered-content">Production</span>
+                                    </div>
+                                </th>
+                                <th onclick = "flipAvailabilityOrder()" title="Click to change product availability sort direction, sort order or to exclude product availability from sorting">
+                                    <div class="slds-text-color_weak centering-content_v">
+                                        <a class="slds-th__action slds-text-link_reset slds-p-horizontal_none centered-content">In Stock{!IF(availabilityOrder!='',IF(availabilityOrder=='ASC','▲','▼'),'')}{!availabilityStage}</a>
+                                    </div>  
+                                </th>
+                                <apex:actionFunction name="flipAvailabilityOrder" action="{!flipAvailabilityOrder}" rerender="records"/>        
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <apex:repeat value="{!pageSet}" var="prod">
+                                <tr class="slds-hint-parent">
+                                    
+                                    <th scope="row" class="slds-align-left">
+                                        <apex:commandLink styleClass="slds-truncate" action="{!showCurrentRecord}" title="Click to see details of product {!prod.Name}" value="{!prod.Name}">
+                                            <apex:param name="showId" assignTo="{!idToOperate}" value="{!prod.Id}"/> 
+                                        </apex:commandLink>
+                                    </th>
+                                    <td>
+                                        <div class="centering-content_v">
+                                            <span class="centered-content">{!prod.Unit_Price__c}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="centering-content_v">
+                                            <span class="centered-content">{!prod.Units_Available__c}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="centering-content_v">
+                                            <span class="centered-content">{!prod.Product_Type__c}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="centering-content_v">
+                                            <apex:outputText styleClass="centered-content" value="{0, date, dd'/'MM'/'yyyy}">
+                                                <apex:param value="{!prod.Arrival_Date__c}" />
+                                            </apex:outputText>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="centering-content_v">
+                                            <apex:outputText styleClass="centered-content" value="{0, date, dd'/'MM'/'yyyy}">
+                                                <apex:param value="{!prod.Production_Date__c}" />
+                                            </apex:outputText>
+                                        </div>
+                                    </td>
+                                    <td  style="vertical-align: middle;">
+                                        <div class="centering-content_v">
+                                            <!--span class="centered-content">{!IF(prod.In_Stock__c == true,'Yes','No')}</span-->
+                                            <apex:inputCheckbox style="width: 100%;" styleClass="centered-content" value="{!prod.In_Stock__c}" onclick="return false;"/>
+                                        </div>
+                                    </td> 
+                                    <td >
+                                        <div>
+                                            <apex:commandLink action="{!editCurrentRecord}" title="Click to edit product {!prod.Name}" value="Edit">
+                                                <apex:param name="editId" assignTo="{!idToOperate}" value="{!prod.Id}"/> 
+                                            </apex:commandLink>
+                                            <span> | </span> 
+                                            <apex:commandLink action="{!askForDeleteCurrentRecord}" title="Click to delete product {!prod.Name}" value="Del"> 
+                                                <apex:param name="delId" assignTo="{!idToOperate}" value="{!prod.Id}" /> 
+                                            </apex:commandLink>
+                                        </div>
+                                    </td> 
+                                    
+                                </tr>
+                            </apex:repeat>
+                        </tbody>
+                    </table>
+                    <div class = "slds-page-header slds-page-header_joined slds-shrink-none" style="padding: 0; border-radius: 0 0 .25rem .25rem;"> 
+                        <div class="slds-grid slds-m-top_small">
+                            <div class="slds-col slds-size_2-of-12">
+                            </div>
+                            <div class="slds-grid slds-grid_vertical-align-start slds-button-group slds-size_8-of-12 centering-content_v">
+                                <div class="slds-button-group centered-content">
+                                    <apex:commandButton styleClass="slds-button slds-button_neutral" value="◄" action="{!prevPage}" disabled="{!NOT(hasPrevious)}" title="Go to previous page" rendered="{!(pagesTotal > 1)}" rerender="records"/>
+                                    <apex:repeat value="{!leftIndSet}" var="index"> 
+                                        <apex:commandLink action="{!toPage}" title="Go to page {!index}" styleClass="slds-button {!IF(pageNumber == index,'slds-button_brand','slds-button_neutral')}" value="{!index}" rerender="records">
+                                            <apex:param name="directPage" assignTo="{!directPage}" value="{!index}"/> 
+                                        </apex:commandLink>
+                                    </apex:repeat>
+                                    <apex:outputPanel rendered="{!(pagesTotal > 10)}">
+                                        <a id="directPage" class="slds-button {!IF(pageNumber > rulerSideCnt,IF(pageNumber < pagesTotal-rulerSideCnt+1,'slds-button_brand','slds-button_outline-brand'),'slds-button_outline-brand')}" title="Click to choose arbitrary page number" onclick="swapSlider();" rendered="{!(pagesTotal > 10)}" style="border-radius: 0;">{!pageNumber}▼</a>
+                                        <apex:actionFunction name="toPage" action="{!toPage}" rerender="records">
+                                            <apex:param name="directPage" assignTo="{!directPage}" value=""/> 
+                                        </apex:actionFunction>
+                                    </apex:outputPanel>
+                                    <apex:repeat value="{!rightIndSet}" var="index"> 
+                                        <apex:commandLink action="{!toPage}" title="Go to page {!index}" styleClass="slds-button {!IF(pageNumber == index,'slds-button_brand','slds-button_neutral')}" value="{!index}" rerender="records">
+                                            <apex:param name="directPage" assignTo="{!directPage}" value="{!index}"/>
+                                        </apex:commandLink>
+                                    </apex:repeat>
+                                    <apex:commandButton styleClass="slds-button slds-button_neutral" value="►" action="{!nextPage}" disabled="{!NOT(hasNext)}" title="Go to next page" rendered="{!(pagesTotal > 1)}" rerender="records"/>    
+                                </div>
+                            </div>
+                            <div class="slds-grid slds-size_2-of-12">
+                                <div class="slds-grid slds-grid_vertical slds-size_6-of-12 slds-float_right">
+                                    <div>
+                                        <span class="slds-float_right" style="padding-right: 0.5rem; font-size: 8pt; text-align: right">Records</span>                                            
+                                    </div>
+                                    <div>
+                                        <span class="slds-float_right" style="padding-right: 0.5rem; font-size: 8pt; text-align: right">on page</span>    
+                                    </div>
+                                </div> 
+                                <div class="slds-grid slds-size_6-of-12 slds-float_right centered-content_v">
+                                    <apex:selectList styleClass="slds-button_icon-more slds-float_right" id="recPerPage" size="1" value="{!pageSize}" multiselect="false" title="Number of records per page">
+                                        <apex:selectOption itemValue="5" itemLabel="5"/>
+                                        <apex:selectOption itemValue="10" itemLabel="10"/>
+                                        <apex:selectOption itemValue="25" itemLabel="25"/>
+                                        <apex:selectOption itemValue="50" itemLabel="50"/>
+                                        <apex:selectOption itemValue="100" itemLabel="100"/>
+                                        <!--apex:selectOptions value="{!pageSizes}"/-->
+                                        <apex:actionSupport event="onchange" action="{!updatePageSize}" rerender="records"/> 
+                                    </apex:selectList><p/>
+                                </div>
+                            </div>
+                        </div> 
+                        <div class="slds-m-top_small slds-m-bottom_none slds-p-bottom_none" style="text-align: center;">
+                            <input  style="display: none; width:400px" oninput="updateDirectPage(this.value);" onchange="onSliderRelease();" id="range" value="{!directPage}" type="range" min="1" max="{!pagesTotal}" step="1" />
+                        </div>
+                    </div>
+                </apex:outputPanel>    
+            </div>   
+        </apex:form>
+        <script>
+        document.getElementById('{!$Component.topForm.fetchInterval}').disabled = true;
+        function digitsOnly(e){
+            var digits = '1234567890'; 
+            var key = e.key;
+            if (key=="Backspace" || key=="Delete" ||(key.indexOf("Arrow")!=-1)|| key=="Home" || key=="End") return true;                
+            return (digits.indexOf(key)!=-1); 
+        } 
+        var directPageVar = 1;
+        function swapSlider(){
+            var range = document.getElementById('range');
+            var direct = document.getElementById('directPage');
+            if (range.style.display == 'none'){
+                range.style.display = null;
+                direct.style.fontSize = 'larger';
+            } else {
+                range.style.display = 'none';
+                direct.style.fontSize = null;
+                direct.style.color = null;
+            }
+        }
+        function onSliderRelease(){
+            document.getElementById('range').style.display = 'none';
+            toPage(directPageVar);
+        }
+        function updateDirectPage(page){
+            document.getElementById('directPage').innerHTML = page + '▼';
+            directPageVar = page;
+        } 
+        function checkDateInterval(){
+            var fd = new Date(document.getElementById('{!$Component.topForm.fromDate}').value);
+            var td = new Date(document.getElementById('{!$Component.topForm.toDate}').value);
+            var fetch = document.getElementById('{!$Component.topForm.fetchInterval}');
+            var cont = document.getElementById('badSearchIntervalContainer'); 
+            var err = document.getElementById('badSearchIntervalError'); 
+            var base = new Date('1900-01-01');
+            if (fd != '' && td != '' && fd >= base && td >= base){
+                if (fd <= td){
+                    cont.classList.remove('slds-has-error');
+                    err.style.display = 'none';
+                    fetch.disabled = false;
+                } else {
+                    cont.classList.add('slds-has-error');
+                    err.style.display = null;
+                    fetch.disabled = true;           
+                }
+            } else {
+                cont.classList.remove('slds-has-error');
+                err.style.display = 'none';
+                fetch.disabled = true;
+            }
+        }
+        function validateNewEditRecord(){
+            function validateField(field){
+                var cont = document.getElementById('newEditRecord'+field+'Container'); 
+                var err = document.getElementById('newEditRecord'+field+'Error');   
+                if (validated.length == 0){
+                    cont.classList.add('slds-has-error');
+                    err.style.display = null;
+                    noErrors = false;
+                } else {
+                    cont.classList.remove('slds-has-error');
+                    err.style.display = 'none';
+                }
+            }
+            var noErrors = true;
+            var validated = document.getElementById('{!$Component.topForm.newEditRecordName}').value;
+            validateField('Name');
+            var validated = document.getElementById('{!$Component.topForm.newEditRecordPrice}').value;
+            validateField('Price');
+            var validated = document.getElementById('{!$Component.topForm.newEditRecordQuantity}').value;
+            validateField('Quantity');
+            var validated = document.getElementById('{!$Component.topForm.newEditRecordProductType}').value;
+            validateField('ProductType');
+            var ArrivalDateError = false;
+            var ArrivalDate = document.getElementById('{!$Component.topForm.newEditRecordArrivalDate}').value;
+            var arrEmpty = document.getElementById('newEditRecordArrivalDateEmpty');
+            if (ArrivalDate.length == 0){
+                ArrivalDateError = true;
+                noErrors = false;
+                arrEmpty.style.display = null;
+            } else {
+                arrEmpty.style.display = 'none';
+            }
+            var ProductionDateError = false;
+            var ProductionDate = document.getElementById('{!$Component.topForm.newEditRecordProductionDate}').value;
+            var prodEmpty = document.getElementById('newEditRecordProductionDateEmpty');
+            if (ProductionDate.length == 0){
+                ProductionDateError = true;
+                noErrors = false;
+                prodEmpty.style.display = null;
+            } else {
+                prodEmpty.style.display = 'none';
+            }
+            var tooLow = document.getElementById('newEditRecordArrivalDateTooLow');
+            var tooBig = document.getElementById('newEditRecordProductionDateTooBig');
+            if (!ProductionDateError && !ArrivalDateError){
+                if (ProductionDate > ArrivalDate){
+                    ArrivalDateError = true;
+                    ProductionDateError = true;
+                    noErrors = false;
+                    tooLow.style.display = null;
+                    tooBig.style.display = null;
+                } 
+                if (ProductionDate <= ArrivalDate){
+                    tooLow.style.display = 'none';
+                    tooBig.style.display = 'none';
+                }
+            } else {
+                tooLow.style.display = 'none';
+                tooBig.style.display = 'none';
+            }
+            var arrCont = document.getElementById('newEditRecordArrivalDateContainer');
+            if (ArrivalDateError)
+                arrCont.classList.add('slds-has-error');
+            else
+                arrCont.classList.remove('slds-has-error');
+            var prodCont = document.getElementById('newEditRecordProductionDateContainer');
+            if (ProductionDateError)            
+                prodCont.classList.add('slds-has-error');
+            else            
+                prodCont.classList.remove('slds-has-error');
+            if(noErrors) saveRecord();
+        }
+        </script>
+    </html>
+</apex:page>

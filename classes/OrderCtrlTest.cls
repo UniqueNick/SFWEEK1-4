@@ -2,6 +2,7 @@
 public class OrderCtrlTest {
     @isTest static void checkoutTest(){
         
+        TestDataFactory.createCustomSetting();
         Product_Table__c product  = new Product_Table__c(Name = 'Smartphone Y',
                                                          Unit_Price__c = 1000,
                                                          Units_Available__c = 10);

@@ -1,7 +1,8 @@
 @isTest
 public class ProductListCtrlTest {
     @isTest static void CheckConstr(){
-        List<Product_Table__c> pL = New List<Product_Table__c>();
+        TestDataFactory.createCustomSetting(); 
+        List<Product_Table__c> pL = new List<Product_Table__c>();
         for(Integer i=1; i<=10 ; i++){
             pL.add(New Product_Table__c(Name = 'TESTPRODUCT',Units_Available__c = i));
         }
