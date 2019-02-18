@@ -16,7 +16,8 @@
             margin-right:auto;
             }
         </style> 
-        <apex:form id="topForm">        
+        <apex:form id="topForm">     
+            <!--TOAST-->
             <apex:outputPanel id="toastWrapper">
                 <div id="toast" style="position: relative; height: 4rem; z-index: {!toastIndex};">
                     <div class="toastContainer slds-notify_container slds-is-relative">
@@ -28,7 +29,7 @@
                                 </svg>
                             </span>
                             <div class="slds-notify__content">
-                                <h2 class="slds-text-heading_small ">Product <a href="javascript:void(0);">{!newRecord.Name}</a><span> </span>{!writeResult}</h2>
+                                <h2 class="slds-text-heading_small ">Product <a href="javascript:void(0);">{!crudDialogRecord.Name}</a><span> </span>{!writeResult}</h2>
                             </div>
                             <div class="slds-notify__close">
                                 <button class="slds-button slds-button_icon slds-button_icon-inverse" type="button" onclick="hideToastInstantly();" title="Close">
@@ -57,12 +58,13 @@
                     if (rest > 0) 
                         fadeTimerID = setTimeout(stepFadeToast, 20);     
                     else
-                        document.getElementById('toast').style.zIndex = 1;   
+                        document.getElementById('toast').style.zIndex = 1;    
                 }
                 </script>        
             </apex:outputPanel>
-            
+            <!--TOAST-->
             <div style="position: relative; top: -4rem; z-index: 2;">
+                <!--PAGE HEADER WITH SEARCH CONTROLS-->
                 <div class="slds-grid slds-page-header slds-page-header_joined slds-shrink-none" style="padding: 0.5rem;">
                     <div class="slds-grid slds-size_2-of-12 centering-content_v"> 
                         <label class="slds-page-header__name slds-text-heading_large slds-float_left centered-content"><b>Products</b></label>
@@ -92,7 +94,7 @@
                                             <label class="slds-text-heading_small slds-float_right centered-content">From:</label>
                                         </div>
                                         <div class="slds-col slds-float_right">
-                                            <apex:inputField id="fromDate" styleClass="slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" onchange="checkDateInterval();" value="{!startDate.Arrival_Date__c}"/>                
+                                            <apex:inputField id="fromDate" styleClass="slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" onchange="checkDateInterval();" value="{!dateFilterBegin.Arrival_Date__c}"/>                
                                         </div>
                                     </div>                    
                                     <div class="slds-grid slds-size_6-of-12">
@@ -100,7 +102,7 @@
                                             <label class="slds-text-heading_small centered-content slds-float_right">To:</label>
                                         </div>
                                         <div class="slds-col slds-float_right">
-                                            <apex:inputField id="toDate" styleClass="slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" onchange="checkDateInterval();" value="{!endDate.Arrival_Date__c}"/>    
+                                            <apex:inputField id="toDate" styleClass="slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" onchange="checkDateInterval();" value="{!dateFilterEnd.Arrival_Date__c}"/>    
                                         </div>
                                     </div>                    
                                 </div>
@@ -126,8 +128,9 @@
                         </div> 
                     </div>
                 </div>
-
-                <apex:outputPanel id="new_edit_show_record"  rendered="{!showInputPanel}">
+                <!--PAGE HEADER WITH SEARCH CONTROLS-->
+                <!--NEW, EDIT, DELETE, DISPLAY DIALOG-->
+                <apex:outputPanel id="new_edit_show_record"  rendered="{!showCRUDDialog}">
                     <div>
                         <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
                             
@@ -139,15 +142,15 @@
                                         </svg>
                                         <span class="slds-assistive-text">Close</span>
                                     </button>
-                                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">{!IF(inputPanelMode == 'new','New Product',IF(inputPanelMode == 'edit','Edit Product',IF(inputPanelMode == 'delete','Delete Product','Product Data')))}</h2>
+                                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">{!IF(CRUDDialogMode == 'new','New Product',IF(CRUDDialogMode == 'edit','Edit Product',IF(CRUDDialogMode == 'delete','Delete Product','Product Data')))}</h2>
                                 </header>
                                 <div class="slds-modal__content slds-p-horizontal_medium" id="modal-content-id-1">
-                                    <apex:inputHidden id="hiddenId" value="{!newRecord.Id}" rendered="{!IF(inputPanelMode == 'edit',true,IF(inputPanelMode == 'delete',true,false))}"/>
-                                    <div id="deleteBody" class = "slds-grid slds-grid_vertical slds-p-around_medium" style="{!IF(inputPanelMode == 'delete','','display:none')}">
+                                    <apex:inputHidden id="hiddenId" value="{!crudDialogRecord.Id}" rendered="{!IF(CRUDDialogMode == 'edit',true,IF(CRUDDialogMode == 'delete',true,false))}"/>
+                                    <div id="deleteBody" class = "slds-grid slds-grid_vertical slds-p-around_medium" style="{!IF(CRUDDialogMode == 'delete','','display:none')}">
                                         <label class="slds-text-heading_small slds-float_left">
                                             <div class="slds-grid slds-grid_vertical">
                                                 <div class="centering-content_v">
-                                                    <span class="centered-content">{!newRecord.Name}</span><br/>                                                
+                                                    <span class="centered-content">{!crudDialogRecord.Name}</span><br/>                                                
                                                 </div>
                                                 <div class="slds-p-vertical_xx-small"> </div>
                                                 <div class="centering-content_v">
@@ -156,107 +159,107 @@
                                             </div>
                                         </label>
                                     </div>
-                                    <div id="newEditShowBody" class = "slds-grid slds-grid_vertical slds-p-around_medium" style="{!IF(inputPanelMode != 'delete','','display:none')}">
+                                    <div id="newEditShowBody" class = "slds-grid slds-grid_vertical slds-p-around_medium" style="{!IF(CRUDDialogMode != 'delete','','display:none')}">
                                         <div id="newEditRecordNameContainer" class = "slds-grid slds-p-bottom_x-small slds-border_bottom slds-form-element" >
-                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                            <div class="{!IF(CRUDDialogMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
                                                 <label class="slds-text-heading_small slds-float_left centered-content_v">Product Name</label>
                                             </div>
-                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
-                                                <apex:inputField id="newEditRecordName" styleClass="slds-float_left slds-input" value="{!newRecord.Name}" />
+                                            <div class="slds-size_8-of-12" style="{!IF((CRUDDialogMode == 'new' || CRUDDialogMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordName" styleClass="slds-float_left slds-input" value="{!crudDialogRecord.Name}" />
                                                 <label id="newEditRecordNameError" class="slds-float_left slds-form-element__help" style="display: none;">Please enter product name above</label>
                                             </div>
-                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
-                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!newRecord.Name}</label>
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(CRUDDialogMode == 'show','','display:none')}">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!crudDialogRecord.Name}</label>
                                             </div>
                                         </div>
                                         <div id="newEditRecordPriceContainer" class = "slds-grid slds-p-vertical_x-small slds-border_bottom" >
-                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                            <div class="{!IF(CRUDDialogMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
                                                 <label class="slds-text-heading_small slds-float_left centered-content_v">Price</label>
                                             </div>
-                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
-                                                <apex:inputField id="newEditRecordPrice" styleClass="slds-float_left slds-input" value="{!newRecord.Unit_Price__c}" onkeypress="return digitsOnly(event);"/>       
+                                            <div class="slds-size_8-of-12" style="{!IF((CRUDDialogMode == 'new' || CRUDDialogMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordPrice" styleClass="slds-float_left slds-input" value="{!crudDialogRecord.Unit_Price__c}" onkeypress="return digitsOnly(event);"/>       
                                                 <label id="newEditRecordPriceError" class="slds-float_left slds-form-element__help" style="display: none;">Please enter product price above</label>
                                             </div>
-                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
-                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!newRecord.Unit_Price__c}$</label>
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(CRUDDialogMode == 'show','','display:none')}">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!crudDialogRecord.Unit_Price__c}$</label>
                                             </div>
                                         </div>
                                         <div id="newEditRecordQuantityContainer" class = "slds-grid slds-p-vertical_x-small slds-border_bottom" >
-                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                            <div class="{!IF(CRUDDialogMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
                                                 <label class="slds-text-heading_small slds-float_left centered-content_v">Stock Quantity</label>
                                             </div>
-                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
-                                                <apex:inputField id="newEditRecordQuantity" styleClass="slds-float_left slds-input" value="{!newRecord.Units_Available__c}" onkeypress="return digitsOnly(event);"/>       
+                                            <div class="slds-size_8-of-12" style="{!IF((CRUDDialogMode == 'new' || CRUDDialogMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordQuantity" styleClass="slds-float_left slds-input" value="{!crudDialogRecord.Units_Available__c}" onkeypress="return digitsOnly(event);"/>       
                                                 <label id="newEditRecordQuantityError" class="slds-float_left slds-form-element__help" style="display: none;">Please enter number of product available above</label>
                                             </div>
-                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
-                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!newRecord.Units_Available__c}</label>
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(CRUDDialogMode == 'show','','display:none')}">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!crudDialogRecord.Units_Available__c}</label>
                                             </div>
                                         </div>
                                         <div id="newEditRecordProductTypeContainer" class = "slds-grid slds-p-vertical_x-small slds-border_bottom" >
-                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                            <div class="{!IF(CRUDDialogMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
                                                 <label class="slds-text-heading_small slds-float_left centered-content_v">Product Type</label>
                                             </div>
-                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
-                                                <apex:inputField id="newEditRecordProductType" styleClass="slds-float_left slds-input" value="{!newRecord.Product_Type__c}" />       
+                                            <div class="slds-size_8-of-12" style="{!IF((CRUDDialogMode == 'new' || CRUDDialogMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordProductType" styleClass="slds-float_left slds-input" value="{!crudDialogRecord.Product_Type__c}" />       
                                                 <label id="newEditRecordProductTypeError" class="slds-float_left slds-form-element__help" style="display: none;">Please enter type of product above</label>
                                             </div>
-                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
-                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!newRecord.Product_Type__c}</label>
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(CRUDDialogMode == 'show','','display:none')}">
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!crudDialogRecord.Product_Type__c}</label>
                                             </div>
                                         </div>
                                         <div id="newEditRecordProductionDateContainer" class = "slds-grid slds-p-vertical_x-small slds-border_bottom" >
-                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                            <div class="{!IF(CRUDDialogMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
                                                 <label class="slds-text-heading_small slds-float_left centered-content_v">Production Date</label>
                                             </div>
-                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
-                                                <apex:inputField id="newEditRecordProductionDate" styleClass="slds-float_left slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" value="{!newRecord.Production_Date__c}" />       
+                                            <div class="slds-size_8-of-12" style="{!IF((CRUDDialogMode == 'new' || CRUDDialogMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordProductionDate" styleClass="slds-float_left slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" value="{!crudDialogRecord.Production_Date__c}" />       
                                                 <label id="newEditRecordProductionDateEmpty" class="slds-float_left slds-form-element__help" style="display: none;">Please enter date of production above</label>
                                                 <label id="newEditRecordProductionDateTooBig" class="slds-float_left slds-form-element__help" style="display: none;">Production should be happened before arrival</label>
                                             </div>
-                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(CRUDDialogMode == 'show','','display:none')}">
                                                 <apex:outputText styleClass="slds-text-heading_small slds-float_left centered-content_v" value="{0, date, d MMMM yyyy}">
-                                                    <apex:param value="{!newRecord.Production_Date__c}" />
+                                                    <apex:param value="{!crudDialogRecord.Production_Date__c}" />
                                                 </apex:outputText>
                                             </div>
                                         </div>
-                                        <div id="newEditRecordArrivalDateContainer" class = "slds-grid {!IF(inputPanelMode == 'show','slds-p-vertical_x-small slds-border_bottom','slds-p-top_x-small')}">
-                                            <div class="{!IF(inputPanelMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
+                                        <div id="newEditRecordArrivalDateContainer" class = "slds-grid {!IF(CRUDDialogMode == 'show','slds-p-vertical_x-small slds-border_bottom','slds-p-top_x-small')}">
+                                            <div class="{!IF(CRUDDialogMode == 'show','slds-size_6-of-12','slds-size_4-of-12')} centering-content_v">
                                                 <label class="slds-text-heading_small slds-float_left centered-content_v">Arrival Date</label>
                                             </div>
-                                            <div class="slds-size_8-of-12" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
-                                                <apex:inputField id="newEditRecordArrivalDate" styleClass="slds-float_left slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" value="{!newRecord.Arrival_Date__c}" />       
+                                            <div class="slds-size_8-of-12" style="{!IF((CRUDDialogMode == 'new' || CRUDDialogMode == 'edit'),'','display:none')}">
+                                                <apex:inputField id="newEditRecordArrivalDate" styleClass="slds-float_left slds-input" showDatePicker="false" type="date" html-min="1900-01-01" html-max="2100-12-31" value="{!crudDialogRecord.Arrival_Date__c}" />       
                                                 <label id="newEditRecordArrivalDateEmpty" class="slds-float_left slds-form-element__help" style="display: none;">Please enter date of product arrival above</label>
                                                 <label id="newEditRecordArrivalDateTooLow" class="slds-float_left slds-form-element__help" style="display: none;">Arrival should be happened after production</label>
                                             </div>
-                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(inputPanelMode == 'show','','display:none')}">
+                                            <div class="slds-size_6-of-12 centering-content_v" style="{!IF(CRUDDialogMode == 'show','','display:none')}">
                                                 <apex:outputText styleClass="slds-text-heading_small slds-float_left centered-content_v" value="{0, date, d MMMM yyyy}">
-                                                    <apex:param value="{!newRecord.Arrival_Date__c}" />
+                                                    <apex:param value="{!crudDialogRecord.Arrival_Date__c}" />
                                                 </apex:outputText>
                                             </div>
                                         </div>
-                                        <div class = "slds-grid slds-p-top_x-small" style="{!IF(inputPanelMode == 'show','','display:none')}">
+                                        <div class = "slds-grid slds-p-top_x-small" style="{!IF(CRUDDialogMode == 'show','','display:none')}">
                                             <div class="slds-size_6-of-12 centering-content_v">
                                                 <label class="slds-text-heading_small slds-float_left centered-content_v">In Stock</label>
                                             </div>
                                             <div class="slds-size_6-of-12 centering-content_v" >
-                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!IF(newRecord.In_Stock__c == true,'Yes','No')}</label>
+                                                <label class="slds-text-heading_small slds-float_left centered-content_v">{!IF(crudDialogRecord.In_Stock__c == true,'Yes','No')}</label>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <footer class="slds-modal__footer">
-                                    <div id = "footerDel" style="{!IF(inputPanelMode == 'delete','','display:none')}">
+                                    <div id = "footerDel" style="{!IF(CRUDDialogMode == 'delete','','display:none')}">
                                         <input class="slds-button slds-button_neutral" value="Cancel" type="button" onclick="document.getElementById('{!$Component.new_edit_show_record}').style.display = 'none'"/>
                                         <input class="slds-button slds-button_brand" value="Delete" type="button" onclick="deleteRecord()"/>
                                         <apex:actionFunction name="deleteRecord" action="{!deleteRecord}"/>
                                     </div>
-                                    <div id = "footerEditNew" style="{!IF((inputPanelMode == 'new' || inputPanelMode == 'edit'),'','display:none')}">
+                                    <div id = "footerEditNew" style="{!IF((CRUDDialogMode == 'new' || CRUDDialogMode == 'edit'),'','display:none')}">
                                         <input class="slds-button slds-button_neutral" value="Cancel" type="button" onclick="document.getElementById('{!$Component.new_edit_show_record}').style.display = 'none'"/>
                                         <input class="slds-button slds-button_brand" value="Save" type="button" onclick="validateNewEditRecord()"/>
                                         <apex:actionFunction name="saveRecord" action="{!saveRecord}"/>
                                     </div>
-                                    <div id = "footerShow" style="text-align: center; {!IF(inputPanelMode == 'show','','display:none')}">
+                                    <div id = "footerShow" style="text-align: center; {!IF(CRUDDialogMode == 'show','','display:none')}">
                                         <input class="slds-button slds-button_brand" value="OK" type="button" onclick="document.getElementById('{!$Component.new_edit_show_record}').style.display = 'none'"/>
                                     </div>
                                 </footer>
@@ -265,8 +268,10 @@
                         <div class="slds-backdrop slds-backdrop_open"></div>
                     </div>
                 </apex:outputPanel>
+                <!--NEW, EDIT, DELETE, DISPLAY DIALOG-->
                 
                 <apex:outputPanel id="records">
+                    <!--RECORDS TABLE-->
                     <table  class="slds-table slds-table_bordered">
                         <thead> 
                             <tr class="slds-text-title_caps">
@@ -318,7 +323,7 @@
                                     
                                     <th scope="row" class="slds-align-left">
                                         <apex:commandLink styleClass="slds-truncate" action="{!showCurrentRecord}" title="Click to see details of product {!prod.Name}" value="{!prod.Name}">
-                                            <apex:param name="showId" assignTo="{!idToOperate}" value="{!prod.Id}"/> 
+                                            <apex:param name="showId" assignTo="{!crudDialogRecordId}" value="{!prod.Id}"/> 
                                         </apex:commandLink>
                                     </th>
                                     <td>
@@ -359,11 +364,11 @@
                                     <td >
                                         <div>
                                             <apex:commandLink action="{!editCurrentRecord}" title="Click to edit product {!prod.Name}" value="Edit">
-                                                <apex:param name="editId" assignTo="{!idToOperate}" value="{!prod.Id}"/> 
+                                                <apex:param name="editId" assignTo="{!crudDialogRecordId}" value="{!prod.Id}"/> 
                                             </apex:commandLink>
                                             <span> | </span> 
                                             <apex:commandLink action="{!askForDeleteCurrentRecord}" title="Click to delete product {!prod.Name}" value="Del"> 
-                                                <apex:param name="delId" assignTo="{!idToOperate}" value="{!prod.Id}" /> 
+                                                <apex:param name="delId" assignTo="{!crudDialogRecordId}" value="{!prod.Id}" /> 
                                             </apex:commandLink>
                                         </div>
                                     </td> 
@@ -372,6 +377,8 @@
                             </apex:repeat>
                         </tbody>
                     </table>
+                    <!--RECORDS TABLE-->
+                    <!--PAGINATION CONTROLS BLOCK -->
                     <div class = "slds-page-header slds-page-header_joined slds-shrink-none" style="padding: 0; border-radius: 0 0 .25rem .25rem;"> 
                         <div class="slds-grid slds-m-top_small">
                             <div class="slds-col slds-size_2-of-12">
@@ -379,18 +386,18 @@
                             <div class="slds-grid slds-grid_vertical-align-start slds-button-group slds-size_8-of-12 centering-content_v">
                                 <div class="slds-button-group centered-content">
                                     <apex:commandButton styleClass="slds-button slds-button_neutral" value="◄" action="{!prevPage}" disabled="{!NOT(hasPrevious)}" title="Go to previous page" rendered="{!(pagesTotal > 1)}" rerender="records"/>
-                                    <apex:repeat value="{!leftIndSet}" var="index"> 
+                                    <apex:repeat value="{!pagesFastNavLeftPart}" var="index"> 
                                         <apex:commandLink action="{!toPage}" title="Go to page {!index}" styleClass="slds-button {!IF(pageNumber == index,'slds-button_brand','slds-button_neutral')}" value="{!index}" rerender="records">
                                             <apex:param name="directPage" assignTo="{!directPage}" value="{!index}"/> 
                                         </apex:commandLink>
                                     </apex:repeat>
-                                    <apex:outputPanel rendered="{!(pagesTotal > 10)}">
-                                        <a id="directPage" class="slds-button {!IF(pageNumber > rulerSideCnt,IF(pageNumber < pagesTotal-rulerSideCnt+1,'slds-button_brand','slds-button_outline-brand'),'slds-button_outline-brand')}" title="Click to choose arbitrary page number" onclick="swapSlider();" rendered="{!(pagesTotal > 10)}" style="border-radius: 0;">{!pageNumber}▼</a>
+                                    <apex:outputPanel rendered="{!(pagesTotal > 12)}">
+                                        <a id="directPage" class="slds-button {!IF(pageNumber > 5,IF(pageNumber < pagesTotal-5+1,'slds-button_brand','slds-button_outline-brand'),'slds-button_outline-brand')}" title="Click to choose arbitrary page number" onclick="swapSlider();" rendered="{!(pagesTotal > 10)}" style="border-radius: 0;">{!pageNumber}▼</a>
                                         <apex:actionFunction name="toPage" action="{!toPage}" rerender="records">
                                             <apex:param name="directPage" assignTo="{!directPage}" value=""/> 
                                         </apex:actionFunction>
                                     </apex:outputPanel>
-                                    <apex:repeat value="{!rightIndSet}" var="index"> 
+                                    <apex:repeat value="{!pagesFastNavRightPart}" var="index"> 
                                         <apex:commandLink action="{!toPage}" title="Go to page {!index}" styleClass="slds-button {!IF(pageNumber == index,'slds-button_brand','slds-button_neutral')}" value="{!index}" rerender="records">
                                             <apex:param name="directPage" assignTo="{!directPage}" value="{!index}"/>
                                         </apex:commandLink>
@@ -424,6 +431,7 @@
                             <input  style="display: none; width:400px" oninput="updateDirectPage(this.value);" onchange="onSliderRelease();" id="range" value="{!directPage}" type="range" min="1" max="{!pagesTotal}" step="1" />
                         </div>
                     </div>
+                    <!--PAGINATION CONTROLS BLOCK -->
                 </apex:outputPanel>    
             </div>   
         </apex:form>
