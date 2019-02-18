@@ -43,8 +43,8 @@ public class ProductManagementCtrlTest {
         ctrl.updateSet();
         pageset5 = ctrl.pageSet;
         system.assertEquals(4, pageset5.size()); 
-        ctrl.startDate.Arrival_Date__c = Date.newInstance(1950,2,10);
-        ctrl.endDate.Arrival_Date__c = Date.newInstance(1950,2,14);
+        ctrl.dateFilterBegin.Arrival_Date__c = Date.newInstance(1950,2,10);
+        ctrl.dateFilterEnd.Arrival_Date__c = Date.newInstance(1950,2,14);
         ctrl.applyDateFilter();
         pageset5 = ctrl.pageSet;
         system.assertEquals(3, pageset5.size()); 
@@ -111,39 +111,39 @@ public class ProductManagementCtrlTest {
         //END check pagination
         //START check data manipulation dialogs
         //create
-        system.assertEquals(false, ctrl.showInputPanel);
+        system.assertEquals(false, ctrl.showCRUDDialog);
         ctrl.editNewRecord();
-        system.assertEquals('new', ctrl.getInputPanelMode());
-        system.assertEquals(true, ctrl.showInputPanel);
-        ctrl.newRecord.Name = 'Test';
-        ctrl.newRecord.Production_Date__c = Date.today().addDays(5);
+        system.assertEquals('new', ctrl.getCRUDDialogMode());
+        system.assertEquals(true, ctrl.showCRUDDialog);
+        ctrl.crudDialogRecord.Name = 'Test';
+        ctrl.crudDialogRecord.Production_Date__c = Date.today().addDays(5);
         ctrl.saveRecord();
         system.assertEquals('failed to create.', ctrl.getWriteResult());
         system.assertEquals('error', ctrl.getToastType());
         system.assertEquals(3, ctrl.getToastIndex());
-        ctrl.newRecord.Production_Date__c = Date.today();
+        ctrl.crudDialogRecord.Production_Date__c = Date.today();
         ctrl.saveRecord();
         system.assertEquals('was created succesfully.', ctrl.getWriteResult());
         system.assertEquals('success', ctrl.getToastType());
         system.assertEquals(3, ctrl.getToastIndex());
         pageset5 = ctrl.pageSet;
-        ctrl.idToOperate = pageset5.get(0).Id;
+        ctrl.crudDialogRecordId = pageset5.get(0).Id;
         //edit
         ctrl.editCurrentRecord();
-        system.assertEquals('edit', ctrl.getInputPanelMode());
-        system.assertEquals(true, ctrl.showInputPanel);
-        system.assertEquals(pageset5.get(0).Name, ctrl.newRecord.Name);
-        system.assertEquals(pageset5.get(0).Unit_Price__c, ctrl.newRecord.Unit_Price__c);
-        system.assertEquals(pageset5.get(0).Units_Available__c, ctrl.newRecord.Units_Available__c);
-        system.assertEquals(pageset5.get(0).Production_Date__c, ctrl.newRecord.Production_Date__c);
-        system.assertEquals(pageset5.get(0).Arrival_Date__c, ctrl.newRecord.Arrival_Date__c);
-        system.assertEquals(pageset5.get(0).In_Stock__c, ctrl.newRecord.In_Stock__c);
+        system.assertEquals('edit', ctrl.getCRUDDialogMode());
+        system.assertEquals(true, ctrl.showCRUDDialog);
+        system.assertEquals(pageset5.get(0).Name, ctrl.crudDialogRecord.Name);
+        system.assertEquals(pageset5.get(0).Unit_Price__c, ctrl.crudDialogRecord.Unit_Price__c);
+        system.assertEquals(pageset5.get(0).Units_Available__c, ctrl.crudDialogRecord.Units_Available__c);
+        system.assertEquals(pageset5.get(0).Production_Date__c, ctrl.crudDialogRecord.Production_Date__c);
+        system.assertEquals(pageset5.get(0).Arrival_Date__c, ctrl.crudDialogRecord.Arrival_Date__c);
+        system.assertEquals(pageset5.get(0).In_Stock__c, ctrl.crudDialogRecord.In_Stock__c);
         ctrl.saveRecord();
         system.assertEquals('was updated succesfully.', ctrl.getWriteResult());
         system.assertEquals('success', ctrl.getToastType());
         system.assertEquals(3, ctrl.getToastIndex());
         ctrl.editCurrentRecord();
-        ctrl.newRecord.Production_Date__c = ctrl.newRecord.Arrival_Date__c.addDays(5);
+        ctrl.crudDialogRecord.Production_Date__c = ctrl.crudDialogRecord.Arrival_Date__c.addDays(5);
         ctrl.saveRecord();
         system.assertEquals('failed to update.', ctrl.getWriteResult());
         system.assertEquals('error', ctrl.getToastType());
@@ -151,20 +151,20 @@ public class ProductManagementCtrlTest {
         System.currentPageReference().getParameters().put('showId', pageset5.get(0).Id);
         ctrl.showCurrentRecord();
         //display
-        system.assertEquals('show', ctrl.getInputPanelMode());
-        system.assertEquals(true, ctrl.showInputPanel);
-        system.assertEquals(pageset5.get(0).Name, ctrl.newRecord.Name);
-        system.assertEquals(pageset5.get(0).Unit_Price__c, ctrl.newRecord.Unit_Price__c);
-        system.assertEquals(pageset5.get(0).Units_Available__c, ctrl.newRecord.Units_Available__c);
-        system.assertEquals(pageset5.get(0).Production_Date__c, ctrl.newRecord.Production_Date__c);
-        system.assertEquals(pageset5.get(0).Arrival_Date__c, ctrl.newRecord.Arrival_Date__c);
-        system.assertEquals(pageset5.get(0).In_Stock__c, ctrl.newRecord.In_Stock__c);
+        system.assertEquals('show', ctrl.getCRUDDialogMode());
+        system.assertEquals(true, ctrl.showCRUDDialog);
+        system.assertEquals(pageset5.get(0).Name, ctrl.crudDialogRecord.Name);
+        system.assertEquals(pageset5.get(0).Unit_Price__c, ctrl.crudDialogRecord.Unit_Price__c);
+        system.assertEquals(pageset5.get(0).Units_Available__c, ctrl.crudDialogRecord.Units_Available__c);
+        system.assertEquals(pageset5.get(0).Production_Date__c, ctrl.crudDialogRecord.Production_Date__c);
+        system.assertEquals(pageset5.get(0).Arrival_Date__c, ctrl.crudDialogRecord.Arrival_Date__c);
+        system.assertEquals(pageset5.get(0).In_Stock__c, ctrl.crudDialogRecord.In_Stock__c);
         System.currentPageReference().getParameters().put('delId', pageset5.get(0).Id);
         //delete
         ctrl.askForDeleteCurrentRecord();
-        system.assertEquals('delete', ctrl.getInputPanelMode());
-        system.assertEquals(true, ctrl.showInputPanel);
-        system.assertEquals(pageset5.get(0).Name, ctrl.newRecord.Name);
+        system.assertEquals('delete', ctrl.getCRUDDialogMode());
+        system.assertEquals(true, ctrl.showCRUDDialog);
+        system.assertEquals(pageset5.get(0).Name, ctrl.crudDialogRecord.Name);
         ctrl.deleteRecord();
         system.assertEquals('was deleted succesfully.', ctrl.getWriteResult());
         system.assertEquals('success', ctrl.getToastType());

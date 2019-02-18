@@ -3,263 +3,72 @@ public class ProductManagementCtrl {
     public Integer directPage {get;set;}
     public Integer recordsTotal {get;set;}
     public Integer pagesTotal {get;set;}
-    public Integer rulerSideCnt {get;set;}
     public String searchCriteria {get;set;}
-    public Boolean showInputPanel {get;set;}
-    public String  idToOperate {get;set;}
-    public Product_Register__c startDate {get;set;}
-    public Product_Register__c endDate {get;set;}
-    public Product_Register__c newRecord {get;set;}
-    //public List<Integer> indexesSet {get;set;}
-    public List<Integer> leftIndSet {get;set;}
-    public List<Integer> rightIndSet {get;set;}
+    public Boolean showCRUDDialog {get;set;}
+    public String crudDialogRecordId {get;set;}
+    public Product_Register__c dateFilterBegin {get;set;}
+    public Product_Register__c dateFilterEnd {get;set;}
+    public Product_Register__c crudDialogRecord {get;set;}
+    public List<Integer> pagesFastNavLeftPart {get;set;}
+    public List<Integer> pagesFastNavRightPart {get;set;}
     List<String> sortColumns; 
-    Map<String,String> sortOrder;
+    Map<String,String> sortDirectionByField;
     Integer pageSize = 10;
-    Boolean applyDateInterval = false;
-    String inputPanelMode = '';
+    Boolean filterRecordsByDateInterval = false;
+    String CRUDDialogMode = '';
     String toastType;
     Integer toastIndex = 1;
     String writeResult;
     string baseQueryString = 'SELECT Id, Name, Unit_Price__c, Units_Available__c, Product_Type__c, Arrival_Date__c, Production_Date__c, In_Stock__c  FROM Product_Register__c';
-    
+
     public Integer getToastIndex(){
         return toastIndex;
     }
+    
     public String getToastType(){
         return toastType;
     }
+    
     public String getWriteResult(){
         return writeResult;
     }
-
-    public void deleteRecord(){
-        toastIndex = 3;
-        for(Product_Register__c pr : (List<Product_Register__c>) setCtrl.getRecords()){
-            if (pr.Id == idToOperate){
-                try {
-                    delete pr;
-                    writeResult = 'was deleted succesfully.';
-                    toastType = 'success';
-                } catch (DmlException e) {
-                    writeResult = 'was failed to delete.';
-                    toastType = 'error';
-                }
-                break;
-            }
-        }
-        showInputPanel = false;
-        inputPanelMode = '';
-        updateSet();
+    
+    public String getCRUDDialogMode(){
+        return CRUDDialogMode;
     }
     
-    public void saveRecord(){
-        toastIndex = 3;
-        if (newRecord.Id == null)
-            writeResult = 'was created succesfully.';
-        else 
-            writeResult = 'was updated succesfully.';
-        toastType = 'success';
-        try {
-            if (newRecord.Id == null)
-                insert newRecord;
-            else
-                update newRecord;
-        } catch (DmlException e) {
-            if (newRecord.Id == null)
-                writeResult = 'failed to create.';
-            else 
-                writeResult = 'failed to update.';
-            toastType = 'error';
-            return;
-        }
-        
-        showInputPanel = false;
-        inputPanelMode = '';
-        updateSet();
-    }
-    
-    public String getInputPanelMode(){
-        return inputPanelMode;
-    }
-    
-    public void askForDeleteCurrentRecord(){
-        toastIndex = 1;
-        newRecord = new Product_Register__c();
-        idToOperate = ApexPages.currentPage().getParameters().get('delId');
-        for(Product_Register__c pr : (List<Product_Register__c>) setCtrl.getRecords()){
-            if (pr.Id == idToOperate){
-                newRecord.Id = idToOperate;
-                newrecord.Name = pr.Name;
-                break;
-            }
-        }
-        inputPanelMode = 'delete';
-        showInputPanel = true;
-    }
-
-    public void showCurrentRecord(){
-        toastIndex = 1;
-        newRecord = new Product_Register__c();
-        idToOperate = ApexPages.currentPage().getParameters().get('showId');
-        for(Product_Register__c pr : (List<Product_Register__c>) setCtrl.getRecords()){
-            if (pr.Id == idToOperate){
-                newRecord.Id = idToOperate;
-                newrecord.Name = pr.Name;
-                newrecord.Unit_Price__c = pr.Unit_Price__c;
-                newrecord.Units_Available__c = pr.Units_Available__c;
-                newrecord.Product_Type__c = pr.Product_Type__c;
-                newrecord.Arrival_Date__c = pr.Arrival_Date__c;
-                newrecord.Production_Date__c = pr.Production_Date__c;
-                newrecord.In_Stock__c = pr.In_Stock__c;
-                break;
-            }
-        }
-        inputPanelMode = 'show';
-        showInputPanel = true;
-    }
-    
-    public void editCurrentRecord(){
-        toastIndex = 1;
-        newRecord = new Product_Register__c();
-        for(Product_Register__c pr : (List<Product_Register__c>) setCtrl.getRecords()){
-            if (pr.Id == idToOperate){
-                newRecord.Id = idToOperate;
-                newrecord.Name = pr.Name;
-                newrecord.Unit_Price__c = pr.Unit_Price__c;
-                newrecord.Units_Available__c = pr.Units_Available__c;
-                newrecord.Product_Type__c = pr.Product_Type__c;
-                newrecord.Arrival_Date__c = pr.Arrival_Date__c;
-                newrecord.Production_Date__c = pr.Production_Date__c;
-                break;
-            }
-        }
-        inputPanelMode = 'edit';
-        showInputPanel = true;
-    }
-    
-    public void editNewRecord(){
-        toastIndex = 1;
-        newRecord = new Product_Register__c();
-        newRecord.Arrival_Date__c = Date.today();
-        inputPanelMode = 'new';
-        showInputPanel = true;
-    }
-    
-    public void applyDateFilter(){
-        applyDateInterval = true;
-        updateSet();
-    }
-    
-    public void resetDateFilter(){
-        applyDateInterval = false;
-        updateSet();
-    }
-        
     public Integer getPageNumber(){
         return setCtrl.getPageNumber();
     }
-
+    
     public Boolean getHasPrevious(){
         return setCtrl.getHasPrevious();
     }
-
+    
     public Boolean getHasNext(){
         return setCtrl.getHasNext();
     }
-
-    public void toPage(){
-        if(directPage <= pagesTotal) setCtrl.setPageNumber(directPage);
-    }
     
-    public void prevPage(){
-        if (setCtrl.getHasPrevious()) setCtrl.previous();
-    }
-
-    public void nextPage(){
-        if (setCtrl.getHasNext()) setCtrl.next();
-    }
-    
-    public String getNameOrder(){
-        return sortOrder.get('Name');
-    } 
-
-    public String getPriceOrder(){
-        return sortOrder.get('Unit_Price__c');
-    } 
-
-    public String getArrivalDateOrder(){
-        return sortOrder.get('Arrival_Date__c');
-    } 
-
-    public String getAvailabilityOrder(){
-        return sortOrder.get('In_Stock__c');
-    } 
-    
-    public PageReference updatePageSize(){
-        return null;
-    }
-    
-    public PageReference updateSet(){
-        setCtrl = null;
-        return null;
-    }
-
-    void updateSortOrder(String col){
-        If (sortColumns.indexOf(col) == -1){
-            sortColumns.add(col);
-            sortOrder.put(col,'ASC');
-        } else {
-            switch on sortOrder.get(col).length(){
-                when 3 {sortOrder.put(col,'DESC');}
-                when 4 {
-                    sortOrder.put(col,'');
-                    sortColumns.remove(sortColumns.indexOf(col));
-                }
-            }
-        }
-    }
-
-    public PageReference flipNameOrder(){
-        updateSortOrder('Name');
-        return updateSet(); 
-    }
-    
-    public PageReference flipPriceOrder(){
-        updateSortOrder('Unit_Price__c');
-        return updateSet();  
-    }
-
-    public PageReference flipArrivalDateOrder(){
-        updateSortOrder('Arrival_Date__c');
-        return updateSet();
-    }
-    
-    public PageReference flipAvailabilityOrder(){
-        updateSortOrder('In_Stock__c');
-        return updateSet();
-    }
-
     public String getNameStage(){
         if (sortColumns.indexOf('Name') == -1) return '';
         return String.valueOf(sortColumns.indexOf('Name')+1);
     }
-
+    
     public String getPriceStage(){
         if (sortColumns.indexOf('Unit_Price__c') == -1) return '';
         return String.valueOf(sortColumns.indexOf('Unit_Price__c')+1);
     }
-
+    
     public String getArrivalStage(){
         if (sortColumns.indexOf('Arrival_Date__c') == -1) return '';
         return String.valueOf(sortColumns.indexOf('Arrival_Date__c')+1);
     }
-
+    
     public String getAvailabilityStage(){
         if (sortColumns.indexOf('In_Stock__c') == -1) return '';
         return String.valueOf(sortColumns.indexOf('In_Stock__c')+1);
     }
-
+    
     public Integer getPageSize() {
         return pageSize;
     } 
@@ -271,6 +80,22 @@ public class ProductManagementCtrl {
         rebuildIndexes();
         toPage();
     }
+    
+    public String getNameOrder(){
+        return sortDirectionByField.get('Name');
+    } 
+    
+    public String getPriceOrder(){
+        return sortDirectionByField.get('Unit_Price__c');
+    } 
+    
+    public String getArrivalDateOrder(){
+        return sortDirectionByField.get('Arrival_Date__c');
+    } 
+    
+    public String getAvailabilityOrder(){
+        return sortDirectionByField.get('In_Stock__c');
+    } 
 
     public List<Product_Register__c> pageSet {
         get{
@@ -283,26 +108,26 @@ public class ProductManagementCtrl {
         get{
             if(setCtrl == null){
                 String fullQueryString = baseQueryString;
-                if (applyDateInterval || (searchCriteria != null && searchCriteria.length() != 0))
+                if (filterRecordsByDateInterval || (searchCriteria != null && searchCriteria.length() != 0))
                     fullQueryString += ' WHERE ';
                 if (searchCriteria != null && searchCriteria.length() != 0) 
                     fullQueryString += ' Name LIKE \'%' + searchCriteria + '%\'';
-                if (applyDateInterval && searchCriteria != null && searchCriteria.length() != 0)
+                if (filterRecordsByDateInterval && searchCriteria != null && searchCriteria.length() != 0)
                     fullQueryString += ' AND ';
-                if (applyDateInterval) {
+                if (filterRecordsByDateInterval) {
                     fullQueryString += 'Arrival_Date__c >= ' +
-                        String.valueOf(startDate.Arrival_Date__c.year()).leftPad(4,'0') + '-' +
-                        String.valueOf(startDate.Arrival_Date__c.month()).leftPad(2,'0') + '-' + 
-                        String.valueOf(startDate.Arrival_Date__c.day()).leftPad(2,'0') + 
+                        String.valueOf(dateFilterBegin.Arrival_Date__c.year()).leftPad(4,'0') + '-' +
+                        String.valueOf(dateFilterBegin.Arrival_Date__c.month()).leftPad(2,'0') + '-' + 
+                        String.valueOf(dateFilterBegin.Arrival_Date__c.day()).leftPad(2,'0') + 
                         ' AND Arrival_Date__c <= ' + 
-                        String.valueOf(endDate.Arrival_Date__c.year()).leftPad(4,'0') + '-' +
-                        String.valueOf(endDate.Arrival_Date__c.month()).leftPad(2,'0') + '-' + 
-                        String.valueOf(endDate.Arrival_Date__c.day()).leftPad(2,'0'); 
+                        String.valueOf(dateFilterEnd.Arrival_Date__c.year()).leftPad(4,'0') + '-' +
+                        String.valueOf(dateFilterEnd.Arrival_Date__c.month()).leftPad(2,'0') + '-' + 
+                        String.valueOf(dateFilterEnd.Arrival_Date__c.day()).leftPad(2,'0'); 
                 }
                 if (sortColumns.size() != 0){
                     fullQueryString += ' ORDER BY ';  
                     for(integer i = 0; i < sortColumns.size(); i++){
-                        fullQueryString += ((i > 0)?', ':'') + sortColumns.get(i) + ' ' + sortOrder.get(sortColumns.get(i));
+                        fullQueryString += ((i > 0)?', ':'') + sortColumns.get(i) + ' ' + sortDirectionByField.get(sortColumns.get(i));
                     }
                 } 
                 setCtrl = new ApexPages.StandardSetController(Database.getQueryLocator(fullQueryString));
@@ -314,33 +139,207 @@ public class ProductManagementCtrl {
         }set;
     }
     
+    public void toPage(){
+        if(directPage <= pagesTotal) setCtrl.setPageNumber(directPage);
+    }
+    
+    public void prevPage(){
+        if (setCtrl.getHasPrevious()) setCtrl.previous();
+    }
+    
+    public void nextPage(){
+        if (setCtrl.getHasNext()) setCtrl.next();
+    }
+    
+    public void deleteRecord(){
+        toastIndex = 3;
+        Product_Register__c toDelete; 
+        for(Product_Register__c pr : (List<Product_Register__c>) setCtrl.getRecords()){
+            if (pr.Id == crudDialogRecordId){
+                toDelete = pr;
+                break;
+            }
+        }
+        try {
+            delete toDelete;
+            writeResult = 'was deleted succesfully.';
+            toastType = 'success';
+        } catch (DmlException e) {
+            writeResult = 'was failed to delete.';
+            toastType = 'error';
+        }
+        showCRUDDialog = false;
+        CRUDDialogMode = '';
+        updateSet();
+    }
+    
+    public void saveRecord(){
+        toastIndex = 3;
+        if (crudDialogRecord.Id == null)
+            writeResult = 'was created succesfully.';
+        else 
+            writeResult = 'was updated succesfully.';
+        toastType = 'success';
+        try {
+            upsert crudDialogRecord;
+        } catch (DmlException e) {
+            if (crudDialogRecord.Id == null)
+                writeResult = 'failed to create.';
+            else 
+                writeResult = 'failed to update.';
+            toastType = 'error';
+            return;
+        }
+        
+        showCRUDDialog = false;
+        CRUDDialogMode = '';
+        updateSet();
+    }
+    
+    public void askForDeleteCurrentRecord(){
+        toastIndex = 1;
+        crudDialogRecord = new Product_Register__c();
+        crudDialogRecordId = ApexPages.currentPage().getParameters().get('delId');
+        for(Product_Register__c pr : (List<Product_Register__c>) setCtrl.getRecords()){
+            if (pr.Id == crudDialogRecordId){
+                crudDialogRecord.Id = crudDialogRecordId;
+                crudDialogRecord.Name = pr.Name;
+                break;
+            }
+        }
+        CRUDDialogMode = 'delete';
+        showCRUDDialog = true;
+    }
+    
+    public void showCurrentRecord(){
+        toastIndex = 1;
+        crudDialogRecord = new Product_Register__c();
+        crudDialogRecordId = ApexPages.currentPage().getParameters().get('showId');
+        for(Product_Register__c pr : (List<Product_Register__c>) setCtrl.getRecords()){
+            if (pr.Id == crudDialogRecordId){
+                crudDialogRecord.Id = crudDialogRecordId;
+                crudDialogRecord.Name = pr.Name;
+                crudDialogRecord.Unit_Price__c = pr.Unit_Price__c;
+                crudDialogRecord.Units_Available__c = pr.Units_Available__c;
+                crudDialogRecord.Product_Type__c = pr.Product_Type__c;
+                crudDialogRecord.Arrival_Date__c = pr.Arrival_Date__c;
+                crudDialogRecord.Production_Date__c = pr.Production_Date__c;
+                crudDialogRecord.In_Stock__c = pr.In_Stock__c;
+                break;
+            }
+        }
+        CRUDDialogMode = 'show';
+        showCRUDDialog = true;
+    }
+    
+    public void editCurrentRecord(){
+        toastIndex = 1;
+        crudDialogRecord = new Product_Register__c();
+        for(Product_Register__c pr : (List<Product_Register__c>) setCtrl.getRecords()){
+            if (pr.Id == crudDialogRecordId){
+                crudDialogRecord.Id = crudDialogRecordId;
+                crudDialogRecord.Name = pr.Name;
+                crudDialogRecord.Unit_Price__c = pr.Unit_Price__c;
+                crudDialogRecord.Units_Available__c = pr.Units_Available__c;
+                crudDialogRecord.Product_Type__c = pr.Product_Type__c;
+                crudDialogRecord.Arrival_Date__c = pr.Arrival_Date__c;
+                crudDialogRecord.Production_Date__c = pr.Production_Date__c;
+                break;
+            }
+        }
+        CRUDDialogMode = 'edit';
+        showCRUDDialog = true;
+    }
+    
+    public void editNewRecord(){
+        toastIndex = 1;
+        crudDialogRecord = new Product_Register__c();
+        crudDialogRecord.Arrival_Date__c = Date.today();
+        CRUDDialogMode = 'new';
+        showCRUDDialog = true;
+    }
+    
+    public void applyDateFilter(){
+        filterRecordsByDateInterval = true;
+        updateSet();
+    }
+    
+    public void resetDateFilter(){
+        filterRecordsByDateInterval = false;
+        updateSet();
+    }
+    
+    public PageReference updatePageSize(){
+        return null;
+    }
+    
+    public PageReference updateSet(){
+        setCtrl = null;
+        return null;
+    }
+    
+    void updateSortOrder(String col){
+        If (sortColumns.indexOf(col) == -1){
+            sortColumns.add(col);
+            sortDirectionByField.put(col,'ASC');
+        } else {
+            switch on sortDirectionByField.get(col).length(){
+                when 3 {sortDirectionByField.put(col,'DESC');}
+                when 4 {
+                    sortDirectionByField.put(col,'');
+                    sortColumns.remove(sortColumns.indexOf(col));
+                }
+            }
+        }
+    }
+    
+    public PageReference flipNameOrder(){
+        updateSortOrder('Name');
+        return updateSet(); 
+    }
+    
+    public PageReference flipPriceOrder(){
+        updateSortOrder('Unit_Price__c');
+        return updateSet();  
+    }
+    
+    public PageReference flipArrivalDateOrder(){
+        updateSortOrder('Arrival_Date__c');
+        return updateSet();
+    }
+    
+    public PageReference flipAvailabilityOrder(){
+        updateSortOrder('In_Stock__c');
+        return updateSet();
+    }
+    
     void rebuildIndexes(){
         pagesTotal = recordsTotal / pageSize;
         pagesTotal += (Math.mod(recordsTotal, pageSize) != 0)?1:0;
         // hell knows why it doesn't simply allow this:
         // pagesTotal = recordsTotal / pageSize + (Math.mod(recordsTotal, pageSize) != 0)?1:0;
-        leftIndSet = new List<Integer>();
-        rightIndSet = new List<Integer>();
-        rulerSideCnt = (pagesTotal/2 < 6)?(pagesTotal/2):5;
+        pagesFastNavLeftPart = new List<Integer>();
+        pagesFastNavRightPart = new List<Integer>();
+        Integer rulerSideCnt = (pagesTotal/2 < 6)?(pagesTotal/2):5;
         if (pagesTotal>1){
             for (Integer i=1; i <= rulerSideCnt; i++){
-                leftIndSet.add(i);  
+                pagesFastNavLeftPart.add(i);  
                 if (pagesTotal < 12) 
-                    rightIndSet.add(pagesTotal-(pagesTotal/2 - i));
+                    pagesFastNavRightPart.add(pagesTotal-(pagesTotal/2 - i));
                 else
-                    rightIndSet.add(pagesTotal - (5 - i));
+                    pagesFastNavRightPart.add(pagesTotal - (5 - i));
             } 
-            if (pagesTotal < 12 && Math.mod(pagesTotal,2)==1) leftIndSet.add(leftIndSet.size()+1);
+            if (pagesTotal < 12 && Math.mod(pagesTotal,2)==1) pagesFastNavLeftPart.add(pagesFastNavLeftPart.size()+1);
         }
     } 
     
     public ProductManagementCtrl(){
-        startDate = new Product_Register__c();
-        endDate = new Product_Register__c();
-        newRecord = new Product_Register__c();
+        dateFilterBegin = new Product_Register__c();
+        dateFilterEnd = new Product_Register__c();
+        crudDialogRecord = new Product_Register__c();
         sortColumns = new List<String>();
-        sortOrder = new Map<String,String>();
-        showInputPanel = false;
+        sortDirectionByField = new Map<String,String>();
+        showCRUDDialog = false;
         directPage = 1;
     }
 }
